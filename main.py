@@ -1,26 +1,32 @@
-import requests
-import time
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import Message
+from aiogram.types import ContentType
 
-
-API_URL: str = f'https://api.telegram.org/bot'
 BOT_TOKEN: str = '6602485432:AAHsV-VP6Y-ETdIcbNYhWCmH4zLfLGA6ySw'
-MAX_COUNTER = 100
 
-offset = -2
-counter = 0
-chat_id: int
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
-while counter < MAX_COUNTER:
-    updates = requests.get(f'{API_URL}{BOT_TOKEN}/getUpdates?offset={offset + 1}').json()
-    if updates['result']:
-        for result in updates['result']:
-            offset = result['update_id']
-            chat_id = result['message']['from']['id']
-            username = result['message']['from']['username']
-            user_text = result['message']['text']
-            print(username,user_text)
-            TEXT: str = f'Привет @{username}, это FACEIT STATS!'
-            requests.get(f'{API_URL}{BOT_TOKEN}/sendMessage?chat_id={chat_id}&text={TEXT}')
-    time.sleep(5)
-    counter += 1
 
+async def process_start_command(message: Message):
+    await message.reply(''
+                         'Привет!\nЯ бот, '
+                         'который поможет тебе отслеживать твою статистику.\n'
+                         'Жду твоих команд!')
+async def process_help_info_command(message: Message):
+    await message.answer('Здесь будет список моих команд!')
+async def process_support_command(message: Message):
+    await message.answer('@killazius - пиши скорее,если ты нашел баг/недочет в боте, '
+                         'либо просто хочешь подкинуть мне идею')
+
+async def process_messages(message: Message):
+    await message.send_copy(message.chat.id)
+
+dp.message.register(process_start_command,Command(commands=['start']))
+dp.message.register(process_help_info_command,Command(commands=['help','info']))
+dp.message.register(process_support_command,Command(commands=['support']))
+dp.message.register(process_messages)
+
+if __name__ == '__main__':
+    dp.run_polling(bot)
