@@ -1,14 +1,29 @@
 from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command
+from aiogram.filters import Command, BaseFilter
 from aiogram.types import Message
 from aiogram.types import ContentType
 
-BOT_TOKEN: str = '6602485432:AAHsV-VP6Y-ETdIcbNYhWCmH4zLfLGA6ySw'
+with open('token.txt','r',encoding='utf-8') as token_file:
+    BOT_TOKEN: str = token_file.read()
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+TEXT = (f'Мы знаем, что вы являетесь обладателем Premium подписки Telegram\n'
+        f'Если вы хотите поддержать бота, прошу забустить канал нашего разработчика\n'
+        f'https://t.me/boost/killazDev\n'
+        f'https://t.me/boost/killazDev\n'
+        f'https://t.me/boost/killazDev')
+
+admin_ids: list[int] = []
+class IsAdmin(BaseFilter):
+    def __init__(self,admin_ids: list[int]) -> None:
+        self.admin_ids: list[int] = admin_ids
+
+    async def __call__(self,message: Message) -> bool:
+        return message.from_user.id in self.admin_ids
 
 
+@dp.message(lambda msg: msg.text == '/start')
 async def process_start_command(message: Message):
     await message.reply(''
                          'Привет!\nЯ бот, '
@@ -21,12 +36,23 @@ async def process_support_command(message: Message):
                          'либо просто хочешь подкинуть мне идею')
 
 async def process_messages(message: Message):
+    print(message.model_dump_json(indent=4, exclude_none=True))
+    if message.from_user.is_premium:
+        await message.answer(text=TEXT)
     await message.send_copy(message.chat.id)
+@dp.message(IsAdmin(admin_ids))
+async def admin_call(message: Message):
+    await message.answer(text='Привет админ!')
 
-dp.message.register(process_start_command,Command(commands=['start']))
+
 dp.message.register(process_help_info_command,Command(commands=['help','info']))
 dp.message.register(process_support_command,Command(commands=['support']))
 dp.message.register(process_messages)
 
 if __name__ == '__main__':
     dp.run_polling(bot)
+
+
+
+
+
