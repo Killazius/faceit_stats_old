@@ -2,12 +2,31 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command, BaseFilter
 from aiogram.types import Message
 from aiogram.types import ContentType
+import logging
+import os
+import dotenv
 
-with open('token.txt','r',encoding='utf-8') as token_file:
-    BOT_TOKEN: str = token_file.read()
+
+format='[%(asctime)s] #%(levelname)-8s %(filename)s:%(lineno)d - %(name)s - %(message)s'
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[{asctime}] #{levelname:8} {filename}:'
+           '{lineno} - {name} - {message}',
+    style='{'
+)
+logger = logging.getLogger(__name__)
+
+file_handler = logging.FileHandler('logs.log',mode='w')
+logger.addHandler(file_handler)
+
+
+
+dotenv.load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
 TEXT = (f'Мы знаем, что вы являетесь обладателем Premium подписки Telegram\n'
         f'Если вы хотите поддержать бота, прошу забустить канал нашего разработчика\n'
         f'https://t.me/boost/killazDev\n'
